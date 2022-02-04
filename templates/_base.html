@@ -1,0 +1,96 @@
+{% load static %}
+{% comment %} {% load tailwind_tags %} {% endcomment %}
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% tailwind_preload_css %}
+    {% tailwind_css %}
+    <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+    <link rel="stylesheet" href="{% static 'css/boxicons.min.css' %}">
+    <title>WeShop / {% block title %}{% endblock title %}</title>
+</head>
+
+<body class="space-y-10 box-border bg-white">
+    <header class="w-full box-border bg-white font-sans  overflow-hidden z-50">
+        <nav class="ml-auto mr-auto flex items-center justify-between h-16 w-3/4">
+            <div class="logo text-2xl font-bold"><a href="/">WeFashion</a></div>
+
+            <div class="w-72 h-11 flex items-center justify-center text-[#858c9e] font-normal border-[#858c9e] border-[0.5px] rounded-xl px-3">
+                <input type="search" name="search" id="id_search" placeholder="Search products" class="w-full h-full border-none outline-none focus:outline-none focus:border-none">
+                <i class="bx bx-search text-xl" ></i>
+            </div>
+
+            <ul class="flex items-center space-x-7">
+                <li class="relative"><a href="" id="wishlist-count" class="text-xl font-normal text-[#858c9e] relative"><i class='bx bx-heart'></i> <span class="text-sm">{{request.user.user_wishlist.count}}</span></a></li>
+                {% if request.user.is_authenticated %}
+                    <li><a href="{% url 'accounts:user_details' request.user.username request.user.pk %}" class="text-xl font-normal text-[#858c9e]"><i class="bx bx-user"></i></a></li>
+                {% else %}
+                    <li><a href="{% url 'accounts:login' %}" class="text-xl font-normal text-[#858c9e]">Login</a></li>
+                {% endif %}
+                
+                {% with total_qty=cart|length %}
+                    {% if total_qty > 0 %}
+                        <li><a id="cart-qty" href="{% url 'cart:cart_details' %}" class="text-xl font-normal text-[#858c9e]"><i class='bx bx-cart-alt'></i><span class="text-sm">{{total_qty}}</span></a></li>
+                    {% else %}
+                        <li><a id="cart-qty" href="{% url 'cart:cart_details' %}" class="text-xl font-normal text-[#858c9e]"><i class='bx bx-cart-alt'></i></a></li>
+                    {% endif %}
+                {% endwith %}
+                
+            </ul>
+        </nav>
+
+    </header>
+    <main class="w-full space-y-10 font-sans">
+        <div class="w-3/4 ml-auto mr-auto flex items-center justify-between">
+            
+            <ul class="flex items-center space-x-6">
+                <li><a href="/" class="text-lg font-normal text-[#858c9e] relative">Home</a></li>
+                {% for category in categories %}
+                    <li><a href="{% url 'products:product_by_category' category.slug %}" class="text-lg font-normal text-[#858c9e] relative">{{category.name}}</a></li>
+                {% endfor %}
+            </ul>
+            <div class="inline space-x-5">
+                <a class="text-base text-red-600"><span><i class="bx bx-hot"></i></span> Hot deals</a>
+                <a class="text-base text-[#8b008b]">Offer Zone</a>
+            </div>
+        </div>
+        {% block content %}
+        
+        {% endblock content %}
+    </main>
+    <footer>
+
+    </footer>
+
+
+    {% comment %} JavaScripts {% endcomment %}
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'js/js.cookie.min.js' %}"></script>
+    <script src="{% static 'js/jquery.waypoints.min.js' %}"></script>
+    <script src="{% static 'js/infinite.min.js' %}"></script>
+    <script>
+        var csrftoken = Cookies.get("csrftoken");
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
+        }
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+                }
+            },
+        })
+    </script>
+    {% block javascripts %}
+
+    {% endblock javascripts %}
+</body>
+
+</html>

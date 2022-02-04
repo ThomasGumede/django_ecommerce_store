@@ -1,0 +1,91 @@
+{% extends '_base.html' %}
+
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+    <div class="grid grid-cols-3 gap-4 w-full font-sans px-11 box-border">
+        {% for product in products %}
+            <div class="w-[300px] h-[450px] flex flex-col items-center justify-center relative bg-white space-y-4">
+                <div class="relative w-full h-4/5 group">
+                  <img src="{{product.default_img.url}}" alt="{{product.name}}" class="w-full h-full object-cover"/> 
+                  <div class="absolute bottom-0 right-0 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-500 delay-200 w-full h-16 flex items-center justify-center space-x-6">
+                        <div>
+                            {% with wishlist=request.user.user_wishlist.all %}
+                                <div class="w-11 h-11 cursor-pointer bg-[#242f51] flex items-center justify-center text-white font-bold text-3xl" id="wish" class="text-black" data-action="{% if product in wishlist %}out{%else%}add{% endif %}" data-uuid={{product.product_uuid}} >
+                                    {% if product in wishlist %}<i class="bx bx-heart" id="wish-heart"></i>{%else%}<i class="bx bx-heart" id="wish-heart"></i>{% endif %}
+                                </div>
+                            {% endwith %}
+                        </div>
+                        <div>
+                            <div id="add-cart" data-action="post" data-productuuid={{product.product_uuid}} class="w-11 h-11 cursor-pointer bg-[#242f51] flex items-center justify-center text-white font-bold text-3xl">
+                                <i class="bx bx-cart"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-2 text-center">
+                    <p class="text-xl font-normal text-black"><a href="{% url 'products:product_details' product.product_uuid %}">{{product.name}}</a></p>
+                    <p class="text-lg font-normal text-red-500">{{product.price}}</p>
+                </div>     
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}
+
+{% block javascripts %}
+    <script>
+        $("#add-cart").on("click", function(e){
+            e.preventDefault()
+               
+            $.ajax({
+                type: "POST",
+                url: "{% url 'cart:add_cart' %}",
+                data: {
+                    product_uuid: $(this).data("productuuid"),
+                    product_qty: 1,
+                    action: $(this).data("action"),
+                },
+                dataType: "json",
+
+                success: function(data){
+                    document.getElementById("cart-qty").innerHTML = `<i class='bx bx-cart-alt'></i> <span class="text-sm">${data.cart_len}</span>`
+                }
+            }) 
+        })
+
+        {% if request.user.is_authenticated %}
+            $("#wish").on("click", function(e){
+                e.preventDefault()
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'products:add-to-wishlist' %}",
+                    data: {
+                        product_uuid: $(this).data("uuid"),
+                        action: $(this).data("action")
+                    },
+                    dataType: "json",
+
+                    success: function(data){
+                        var $prev_action = $("#wish").data("action");
+                        var $wish_heart = document.getElementById("#wish-heart")
+                        var $wish = document.getElementById("#wish")
+                        document.getElementById("wishlist-count").innerHTML = `<i class='bx bx-heart'></i> <span class="text-sm">${data.wish_len}</span>`;
+                        $("#wish").data(
+                            "action",
+                            $prev_action == "add" ? "out" : "add"
+                        );
+                        if($prev_action == "add"){
+                            $wish.removeChild($wish_heart);
+                            $wish.innerHTML = `<i class="bx bx-heart" id="wish-heart"></i>`
+                        }else {
+                            $wish.removeChild($wish_heart);
+                            $wish.innerHTML = `<i class="bx bx-heart" id="wish-heart"></i>`
+                        }
+
+                        
+                    }
+                })
+            })
+        {% endif %}
+    </script>
+{% endblock javascripts %}

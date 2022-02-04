@@ -1,0 +1,61 @@
+{% extends '_base.html' %}
+
+{% block title %}{% endblock title %}
+
+{% block content %}
+    <div>
+        <div><h1>Your Cart</h1></div>
+        <hr />
+        <div>
+            {% if cart|length == 0 %}
+                <div>
+                    <p>Your cart is empty</p>
+                </div>
+            {% else %}
+                <div>
+                    <h2>${{ cart.get_total_price|floatformat:2 }}</h2>
+                    {% for item in cart %}
+                        {% with product=item.product %}
+                            <div>
+                                {% for image in product.product_image.all %}
+                                    {% if image.is_feature %}
+                                        <img src="{{img.image.url}}" alt="{{img.alt_text}}" style="width: 100px; height: 100px" />
+                                    {% endif %}
+                                {% endfor %}
+                                <hr />
+                                <div>
+                                    <p>{{product.name}}</p>
+                                    <p>{{product.price}}</p>
+                                    <p>{{item.total_price}}</p>
+                                    <hr />
+                                    <br />
+                                    <div class="update-cart">
+                                        <select id="select{{product.id}}" style="width:50px;height:31px;">
+                                            <option value="" selected disabled>{{item.qty}}</option>
+                                            <option value="">1</option>
+                                            <option value="">2</option>
+                                            <option value="">3</option>
+                                            <option value="">7</option>
+                                        </select>
+                                        <a type="button" id="update-button" data-index="{{product.id}}" class="update-button text-decoration-none small ps-3">Update</a>
+
+                                    </div>
+                                    <button data-id={{product.id}} data-action="post" data-type="remove">Remove</button>
+                                    <hr />
+                                    <br />
+
+                                    <div class="checkout">
+                                        <a href="{% url 'orders:create_order' %}">Checkout</a>
+                                        <a href="{% url 'products:product_list' %}">back to shop</a>
+                                    </div>
+
+                                </div>
+                                
+                            </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}

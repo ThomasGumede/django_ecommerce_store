@@ -1,0 +1,7 @@
+env
+media_root
+__pycache__
+migrations
+
+ecommerce/settings_development.py
+theme

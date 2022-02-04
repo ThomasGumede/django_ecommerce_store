@@ -1,0 +1,231 @@
+{% extends '_base.html' %}
+
+{% block title %}Home / {{product.name}}{% endblock title %}
+
+{% block content %}
+<div class="space-y-12 ml-auto mr-auto font-sans box-border w-3/4">
+    <div class="grid grid-cols-[200px_400px_auto] gap-x-8 h-full items-center justify-center bg-white">
+        <div class="h-[600px] grid gap-y-2 grid-cols-[140px] grid-rows-[repeat(4,_150px)]">
+            {% for pic in product.product_images.all %}
+                <div class="cursor-pointer">
+                    <img src="{{pic.image.url}}" class="w-full h-full"/>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="h-[600px]">
+            <img src="{{product.default_img.url}}" class="w-full h-full object-cover"/>
+        </div>
+        <div class="space-y-8">
+            <div class="space-y-5">
+                <h4 class="text-[#242f51] text-3xl font-semibold">{{product.name}}</h4>
+                <p class="text-red-500 text-3xl font-normal">R{{product.price}}</p>  
+            </div>
+            <div class="space-y-6">
+                <div class="inline space-x-5">
+                    <a href=""></a>
+                    <a href="" class="text-lg font-normal text-[#242f51]" id="review-count">({{product.reviews.count}} Customer Review{{product.reviews.count|pluralize}})</a>
+                </div>
+                <div>
+                    <p class="text-sm text-[#9199a0] font-normal">Nesciunt sunt optio corporis recusandae suscipit pariatur architecto voluptas cupiditate perferendis? Est quod voluptas inventore voluptatibus nulla sunt</p>
+                </div>
+                <div class="grid grid-cols-[170px_120px] gap-x-4 items-center">
+                    <div class="flex items-center justify-between px-3 border-[0.5px] border-[#9199a0] h-11">
+                        <p class="text-base font-normal  text-[#9199a0]">Quantity</p>
+                        <div class="flex items-center space-x-4 font-normal text-[#9199a0]">
+                            <p class="text-xl cursor-pointer" id="qty-decr"><</p>
+                            <p class="text-[#242f51] font-bold" id="qty-value">1</p>
+                            <p class="text-xl cursor-pointer" id="qty-incr">></p>
+                        </div>
+                    </div>
+                    <div class="h-11 cursor-pointer bg-[#242f51] flex items-center justify-center text-semibold text-white">
+                       <p id="add-cart" data-action="post" data-productuuid={{product.product_uuid}}>Add to Cart</p>
+                    </div>
+                </div>
+                {% with wishlist=request.user.user_wishlist.all %}
+                <div class="flex items-center space-x-4 font-bold text-[#242f51]">
+                    {% if product in wishlist %}<i class="bx bx-heart text-xl"></i>{%else%}<i class="bx bx-heart text-xl"></i>{% endif %}
+                    <p class="text-lg cursor-pointer" id="wish" data-action="{% if product in wishlist %}out{%else%}add{% endif %}" data-uuid={{product.product_uuid}}>
+                       {% if product in wishlist %}Remove Wishlist{%else%}Add to Wishlist{% endif %}
+                    </p>
+                </div>
+                {% endwith %}
+            </div>
+            <div class="space-y-2 text-base text-[#9199a9]">
+                <p>Collection : {{product.collection}}</p>
+                <p>Size : {{product.size|upper}}</p>
+                <p>Product Type : {{product.product_type.name|upper}}</p>
+            </div>
+        </div>
+    </div>
+    <div class="space-y-7">
+        <div class="w-full text-2xl font-semibold">
+            <p class="cursor-pointer text-center py-3 px-5 text-white bg-[#242f51]" id="toggle-reviews">Reviews</p>
+        </div>
+        <div class="hidden">
+            <div class="space-y-7">
+                <div class="reviews flex items-center space-x-4">
+                    {% for review in product.reviews.all %}
+                        <div class="w-24 p-3 space-y-3 border-2 border-gray-600">
+                            <p class="text-base text-[#]">{{review.author}}</p>
+                            <div>
+                                <article class="text-sm text-[#9199a0] font-normal">
+                                    {{review.text}}
+                                </article>
+                            </div>
+                        </div>
+                    {% empty %}
+                    <div class="no-review">
+                        <p>Sorry, No Reviews</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="review_form" >
+                    <form method="post" class="space-y-5" id="review-form">
+                        <div class="flex flex-col space-y-4 w-[300px]">
+                            <label for="id_author">Author:</label> 
+                            <input type="text" class="border-[1px] border-[#9199a0] text-[#151111] text-sm px-3 py-4 focus:outline-none rounded-lg w-full" name="author" value="{{request.user.first_name}}" maxlength="50" required="" id="id_author">
+                        </div>
+                        <div class="flex flex-col space-y-4 w-[300px]">
+                            <label for="id_text">Text:</label> 
+                            <textarea class="bg-none outline-none rounded-xl border-[1px] w-full focus:outline-none border-[#bbb] text-[#151111] text-sm" name="text" cols="70" rows="5" id="id_text"></textarea>
+                        </div>
+                        <div class="flex flex-col space-y-4 w-[300px]">
+                            <label for="id_rating">Rating:</label> 
+                            <input class="w-full" type="number" name="rating" required="" id="id_rating">
+                        </div>
+                        <input type="submit" value="submit" class="border-none outline-none w-28 h-12 text-center text-white bg-[#242f51] font-semibold" />
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock content %}
+
+{% block javascripts %}
+    <script>
+        {% comment %} Toggle Reviews {% endcomment %}
+        
+
+        {% comment %} Increase Qty Value {% endcomment %}
+        var $qty_increase = $("#qty-incr");
+        var $qty_decrease = $("#qty-decr");
+        var $qty = $("#qty-value")
+
+        $qty_decrease.on("click", (e) => {
+            e.preventDefault();
+            var $qty_value = parseInt($("#qty-value").text())
+            if($qty_value == 0){
+                $qty.text("0")
+            }else {
+                $qty.text($qty_value - 1)
+            }
+        })
+
+        $qty_increase.on("click", (e) => {
+            e.preventDefault();
+            var $qty_value = parseInt($("#qty-value").text())
+            $qty.text($qty_value + 1)
+        })
+
+         {% comment %}Add To Cart{% endcomment %}
+        $("#add-cart").on("click", function(e){
+            e.preventDefault()
+            var $qty = parseInt($("#qty-value").text())
+            $.ajax({
+                type: "POST",
+                url: "{% url 'cart:add_cart' %}",
+                data: {
+                    product_uuid: $(this).data("productuuid"),
+                    product_qty: $qty,
+                    action: $(this).data("action"),
+                },
+                dataType: "json",
+
+                success: function(data){
+                    var $qty = $("#qty-value")
+                    $qty.text("0")
+                    document.getElementById("cart-qty").innerHTML = `<i class='bx bx-cart-alt'></i> <span class="text-sm">${data.cart_len}</span>`
+                }
+            }) 
+        })
+
+        {% if request.user.is_authenticated %}
+            $("#wish").on("click", function(e){
+                e.preventDefault()
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'products:add-to-wishlist' %}",
+                    data: {
+                        product_uuid: $(this).data("uuid"),
+                        action: $(this).data("action")
+                    },
+                    dataType: "json",
+
+                    success: function(data){
+                        var $prev_action = $("#wish").data("action");
+                        document.getElementById("wishlist-count").innerHTML = `<i class='bx bx-heart'></i> <span class="text-sm">${data.wish_len}</span>`;
+                        $("#wish").data(
+                            "action",
+                            $prev_action == "add" ? "out" : "add"
+                        );
+
+                        $("#wish").text($prev_action == "add" ? "Remove From Wishlist" : "Add to Wishlist");
+                    }
+                })
+            })
+        {% endif %}
+
+        {% comment %} Post Review {% endcomment %}
+        $("form#review-form").on("submit", function(e){
+            e.preventDefault()
+            var $text = $("#id_text").val();
+            var $rating = parseInt($("#id_rating").val())
+            if($text && $rating){
+
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'products:product_details' product.product_uuid %}",
+                    data: $("form#review-form").serialize(),
+                    dataType: "json",
+
+                    success: (data) => {
+                        var $review_count = $("#review-count")
+                        var $no_review = document.querySelector(".no-review")
+                        var $reviews = document.querySelector(".reviews")
+                        var instance = JSON.parse(data["review"]);
+                        var fields = instance[0]["fields"];
+                        if(data.success) {
+                            $(this).trigger("reset")
+
+                            $review_count.text(`(${data.reviewcount} Customer Reviews)`)
+                            if($no_review){
+                                $previews.removeChild($no_review);
+                            }
+                            $reviews.innerHTML += `
+                                <div class="w-96 p-3 space-y-3 border-2 border-gray-600">
+                                    <p class="text-base text-[#]">${fields["author"]}</p>
+                                    <div>
+                                        <article class="text-sm text-[#9199a0] font-normal">
+                                            ${fields["text"]}
+                                        </article>
+                                    </div>
+                                </div>
+                            ` 
+                        }
+                        else{
+                            console.log(data.form_errors)
+                        }
+                    },
+
+                    error: (error) => {
+
+                    }
+                })
+            }
+        })
+    </script>
+{% endblock javascripts %}
