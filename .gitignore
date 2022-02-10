@@ -4,4 +4,4 @@ __pycache__
 migrations
 
 ecommerce/settings_development.py
-theme
+node_modules

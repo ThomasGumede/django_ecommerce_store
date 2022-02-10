@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer components {
+    .active {
+        @apply text-[#242f51f6] font-semibold border-b-4 border-[#242f51f6]
+    }
+
+    .cart-nav {
+        @apply py-6 px-4 transition-all duration-500 delay-150
+    }
+
+    
+}

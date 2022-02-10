@@ -69,5 +69,5 @@ def add_to_wishlist(request):
         else:
             return JsonResponse({"error": "Fixxing"})
 
-def product_filtering_view(request, filter):
-    pass
+def product_filtering_view(request):
+    product_type = request.GET.get("product_type", None)

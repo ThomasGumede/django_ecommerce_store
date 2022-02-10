@@ -1,61 +1,162 @@
 {% extends '_base.html' %}
 
-{% block title %}{% endblock title %}
+{% block title %}CART{% endblock title %}
 
 {% block content %}
-    <div>
-        <div><h1>Your Cart</h1></div>
-        <hr />
-        <div>
-            {% if cart|length == 0 %}
-                <div>
-                    <p>Your cart is empty</p>
-                </div>
-            {% else %}
-                <div>
-                    <h2>${{ cart.get_total_price|floatformat:2 }}</h2>
-                    {% for item in cart %}
-                        {% with product=item.product %}
-                            <div>
-                                {% for image in product.product_image.all %}
-                                    {% if image.is_feature %}
-                                        <img src="{{img.image.url}}" alt="{{img.alt_text}}" style="width: 100px; height: 100px" />
-                                    {% endif %}
-                                {% endfor %}
-                                <hr />
-                                <div>
-                                    <p>{{product.name}}</p>
-                                    <p>{{product.price}}</p>
-                                    <p>{{item.total_price}}</p>
-                                    <hr />
-                                    <br />
-                                    <div class="update-cart">
-                                        <select id="select{{product.id}}" style="width:50px;height:31px;">
-                                            <option value="" selected disabled>{{item.qty}}</option>
-                                            <option value="">1</option>
-                                            <option value="">2</option>
-                                            <option value="">3</option>
-                                            <option value="">7</option>
-                                        </select>
-                                        <a type="button" id="update-button" data-index="{{product.id}}" class="update-button text-decoration-none small ps-3">Update</a>
-
-                                    </div>
-                                    <button data-id={{product.id}} data-action="post" data-type="remove">Remove</button>
-                                    <hr />
-                                    <br />
-
-                                    <div class="checkout">
-                                        <a href="{% url 'orders:create_order' %}">Checkout</a>
-                                        <a href="{% url 'products:product_list' %}">back to shop</a>
-                                    </div>
-
-                                </div>
-                                
-                            </div>
-                        {% endwith %}
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
+<div class="space-y-7 ml-auto mr-auto font-sans box-border w-3/4 grid items-center justify-center">
+    <div class="flex items-center w-full justify-between border-b-[1px] border-b-[#242f51af]">
+        <div class="active cart-nav">1. Shopping Cart</div>
+        <div class="cart-nav">2. Checkout</div>
+        <div class="cart-nav">3. Completed</div>
     </div>
+    <div id="cart" class="min-w-full space-y-4">
+        {% if cart|length == 0 %}
+            <div class="text-xl font-bold text-[#242f51] w-full h-16">
+                <p>Your Cart Is Empty</p>
+            </div>
+        {% else %}
+        
+            <table class="border-b-[1px] border-b-[#242f51af] min-w-full text-[#242f51] text-lg font-normal">
+                <tr>
+                    <th class="px-8 py-5 text-center">Product</th>
+                    <th class="px-8 py-5 text-center">Quantity</th>
+                    <th class="px-8 py-5 text-center">Price</th>
+                    <th class="px-8 py-5 text-center">Total</th>
+                </tr>
+                {% for item in cart %}
+                    {% with product=item.product %}
+                    <tr class="text-[#242f51] text-lg text-normal item-{{product.pk}}">
+                        <td class="flex items-center space-x-5 px-8 py-5 text-center">
+                            <p class="text-2xl font-semibold cursor-pointer" id="remove-cart" data-productid={{product.pk}} data-action="post">x</p>
+                            <img src="{{product.default_img.url}}" class="w-[100px] h-[100px]"/>
+                            <p>{{product.name}}</p>
+                        </td>
+                        <td class="px-8 py-5 text-center">
+                            <div class="flex items-center space-x-2">
+                                <div class="border-[1px] px-2 py-1 flex items-center justify-center space-x-3 font-semibold">
+                                    <div class="text-xl cursor-pointer" id="qty-decr">-</div>
+                                    <div class="text-xl" id="qty-value">{{item.qty}}</div>
+                                    <div class="text-xl cursor-pointer" id="qty-incr">+</div>
+                                </div>
+                                <div id="update-cart" data-productid={{product.pk}} data-action="post" class="px-2 py-1 text-center bg-[#242f51] text-white text-xl font-semibold cursor-pointer">
+                                    <p>Update</p>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="px-8 py-5 text-center">
+                            R<span id="item_price">{{product.price}}</span>
+                        </td>
+                        <td class="px-8 py-5 text-center">
+                            R<span id="item_total_price">{{item.total_price}}</span>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                {% empty %}
+                {% endfor %}
+            </table>
+        {% endif %}
+        <div class="flex w-full items-center justify-between">
+            <div class="flex items-center space-x-5">
+                <div class="p-4 text-center border-[1px] cursor-pointer">
+                    <p><a href="{% url 'products:product_list' %}" class="text-[#242f51] font-normal text-lg">Continue Shopping</a></p>
+                </div>
+                <div class="p-4 text-center border-[1px] bg-[#242f51] cursor-pointer {% if cart|length == 0 %}pointer-events-none opacity-60{% endif %}">
+                    <p><a href="#" class="text-white font-normal text-lg">Proceed To Checkout</a></p>
+                </div>
+
+            </div>
+            <div class="space-y-2">
+                <p class="font-normal text-[#242f51]">Total </p>
+                <p class="font-bold text-[#242f51]"  id="total_price">{{cart.get_total_price|floatformat:2}}</p>
+            </div>
+        </div>
+        <hr class="w-[1px]" />
+
+    </div>
+    <div id="checkout" class="min-w-full  hidden ">
+        
+    </div>
+
+</div>
+    
 {% endblock content %}
+
+{% block javascripts %}
+<script>
+    {% comment %} Increase Qty Value {% endcomment %}
+        var $qty_increase = $("#qty-incr");
+        var $qty_decrease = $("#qty-decr");
+        var $qty = $("#qty-value")
+
+        $qty_decrease.on("click", (e) => {
+            e.preventDefault();
+            var $qty_value = parseInt($("#qty-value").text())
+            if($qty_value == 0){
+                $qty.text("0")
+            }else {
+                $qty.text($qty_value - 1)
+            }
+        })
+
+        $qty_increase.on("click", (e) => {
+            e.preventDefault();
+            var $qty_value = parseInt($("#qty-value").text())
+            $qty.text($qty_value + 1)
+        })
+
+        {% comment %}Add To Cart{% endcomment %}
+        $("#update-cart").on("click", function(e){
+            e.preventDefault()
+            var $qty = parseInt($("#qty-value").text())
+            $.ajax({
+                type: "POST",
+                url: "{% url 'cart:update_cart' %}",
+                data: {
+                    productid: $(this).data("productid"),
+                    productqty: $qty,
+                    action: $(this).data("action"),
+                },
+                dataType: "json",
+
+                success: function(data){
+                    var $item_price =parseInt( $("#item_price").text())
+                    var $item_total_price = $("#item_total_price")
+                    var $total_price = $("#total_price")
+                    console.log($item_price)
+                    $item_total_price.text(
+                        `${$item_price * parseInt(data.cart_len)}`
+                    )
+                    $total_price.text(data.total_price)
+                    document.getElementById("cart-qty").innerHTML = `<i class='bx bx-cart-alt'></i> <span class="text-sm">${data.cart_len}</span>`
+                }
+            }) 
+        })
+
+        {% comment %}Add To Cart{% endcomment %}
+        $("#remove-cart").on("click", function(e){
+            e.preventDefault()
+            
+            $.ajax({
+                type: "POST",
+                url: "{% url 'cart:delete_item' %}",
+                data: {
+                    productid: $(this).data("productid"),
+                    action: $(this).data("action"),
+                },
+                dataType: "json",
+
+                success: function(data){
+                    var $total_price = $("#total_price")
+                    if(data.success){
+                        $(".item-" + $(this).data("productid")).remove()
+                    }
+                    $(".item-" + $(this).data("productid")).remove()
+                    $total_price.text(data.total_price)
+                    document.getElementById("cart-qty").innerHTML = `<i class='bx bx-cart-alt'></i> <span class="text-sm">${data.cart_len}</span>`
+                }
+            }) 
+        })
+
+</script>
+{% endblock javascripts %}

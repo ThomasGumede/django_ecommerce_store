@@ -58,10 +58,10 @@
         </div>
     </div>
     <div class="space-y-7">
-        <div class="w-full text-2xl font-semibold">
+        <div id="toggle_reviews" class="w-full text-2xl font-semibold cursor-pointer">
             <p class="cursor-pointer text-center py-3 px-5 text-white bg-[#242f51]" id="toggle-reviews">Reviews</p>
         </div>
-        <div class="hidden">
+        <div id="review_container" class="hidden">
             <div class="space-y-7">
                 <div class="reviews flex items-center space-x-4">
                     {% for review in product.reviews.all %}
@@ -107,8 +107,12 @@
 
 {% block javascripts %}
     <script>
-        {% comment %} Toggle Reviews {% endcomment %}
         
+        {% comment %} Toggle Reviews {% endcomment %}
+        $("#toggle_reviews").on("click", (e) => {
+            e.preventDefault()
+            $("#review_container").toggleClass("hidden")
+        })
 
         {% comment %} Increase Qty Value {% endcomment %}
         var $qty_increase = $("#qty-incr");
@@ -227,5 +231,7 @@
                 })
             }
         })
+
+       
     </script>
 {% endblock javascripts %}

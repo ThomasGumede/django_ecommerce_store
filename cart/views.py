@@ -49,10 +49,11 @@ def update_cart(request):
 def delete_item(request):
     cart = get_cart(request)
     if request.POST.get('action') == 'post':
-        product_id = int(request.POST.get('productid'))
+        product_id = request.POST.get('productid')
         cart.remove(product_id)
 
         context = {
+            "success": True,
             "cart_len": len(cart),
             "total_price": cart.get_total_price()
         }
